@@ -71,7 +71,7 @@ class TicTacToeGame:
         pygame.display.set_caption('Ultimate TicTacToe 5.0')
         
         board_width = (self.cellwidth//200*2+1)*2 + self.cellwidth*3
-        thickness = board_width // 200 * 2 + 1
+        thickness = board_width // 200 * 2 + 3
         gameboard_width, gameboard_height = 3*board_width+2*thickness, 3*board_width+2*thickness
 
         clock = pygame.time.Clock()
@@ -92,8 +92,8 @@ class TicTacToeGame:
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             if self.one_player_button.collidepoint(event.pos):
                                 print('single')
-                                self.players = [Man('Player 1', 'X'),Bot('Player 2', 'O', 10)]
-                                # self.players = [Bot('Player 2', 'O', 10),Man('Player 1', 'X')]
+                                # self.players = [Man('Player 1', 'X'),Bot('Player 2', 'O', 10)]
+                                self.players = [Bot('Player 2', 'O', 10),Man('Player 1', 'X')]
                             elif self.two_player_button.collidepoint(event.pos):
                                 print('multi')
                                 self.players = [Man('Player 1', 'X'), Man('Player 2', 'O')]
@@ -102,7 +102,7 @@ class TicTacToeGame:
                                 self.page = 'game'
                                 self.status = 'C'
                                 self.next_moves = self.find_legal_moves()
-                                # self.copy = copy.deepcopy(self)
+                                self.copy = copy.deepcopy(self)
 
                 case 'game':
                     self.draw_game_page()
@@ -222,7 +222,7 @@ class TicTacToeGame:
             self.step += 1
             # print('minimax dp', self.dp_station.minimax_dp)
             print('status', self.dp_station.status_dp)
-            print('heur', self.dp_station.heuristic_dp)
+            # print('heur', self.dp_station.heuristic_dp)
             print('obser', self.dp_station.observe_dp)
             if isinstance(self.players[self.turn], Bot):
                 import time

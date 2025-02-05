@@ -67,11 +67,13 @@ class Bot(Player):
 
         # next_move = (-1, -1)
         dp = {}
-        
+        iteration = 0
         opponent_mark = 'X' if self.mark == 'O' else 'O'
         # last_pos = game.last_pos
         def minimax(depth: int, maximum: bool, alpha: int, beta: int) -> int:
             """Return the best score of the given gameboard"""
+            nonlocal iteration
+            iteration += 1
             if depth == 0:
                 start = time.time()
             # print(depth)
@@ -169,6 +171,7 @@ class Bot(Player):
                 print('caled next move', self.next_move, best_score, scores)
                 end = time.time()
                 print('minimax time', end-start)
+                print('iteration', iteration)
                 # print('dp', dp)
                 # print('heuristic dp', self.heuristic_dp)
                 # print('observe dp', self.observe_dp)
@@ -199,7 +202,9 @@ class Bot(Player):
         # DP for performance
         if heuristic_dp is not None:
             # board_id = DPStation.board_hashing([gameboard.cells[x*3:(x+1)*3] for x in range(3)])
-            board_id = DPStation.board_hashing(gameboard.cells)
+            # board_id = DPStation.board_hashing(gameboard.cells)
+            board_id = DPStation.board_hashing([[gameboard.sub_boards[x//3+y].cells[y*3+z] for y in range(3) for z in range(3)]for x in range(9)])
+            
             # cell_value = []
             # for x in gameboard.cells:
             #     if x == 'O':
@@ -221,14 +226,14 @@ class Bot(Player):
         status = gameboard.check_board_status(status_dp)
         if status == mark:
             if heuristic_dp is not None:
-                heuristic_dp[board_id] = 100
+                heuristic_dp[board_id] = 1000
             # self.heuristic_dp[board_id] = 100
-            return 100
+            return 1000
         elif status == opponent_mark:
             if heuristic_dp is not None:
-                heuristic_dp[board_id] = -100
+                heuristic_dp[board_id] = -1000
             # self.heuristic_dp[board_id] = -100
-            return -100
+            return -1000
         elif status == 'T':
             if heuristic_dp is not None:
                 heuristic_dp[board_id] = 0
@@ -239,10 +244,20 @@ class Bot(Player):
         # if Bot.observe(gameboard, opponent_mark) > 0:   # Opponent wins on next move
         #     return -100
         # print('timeit', timeit.timeit(lambda: Bot.observe(gameboard, mark), number=10000))
-        value = self.observe(gameboard, mark, observe_dp) * 10   # Each way to win deserve 10 points
-        value -= self.observe(gameboard, opponent_mark, observe_dp) * 10     # Each way of opponent to way deserve -10 points
-        value += gameboard.cells.count(mark)    # More marks is more advantageous
-        value -= gameboard.cells.count(opponent_mark)   # More opponent marks is more disadvantageous
+        value = self.observe(gameboard, mark, observe_dp) * 100   # Each way to win deserve 10 points
+        value -= self.observe(gameboard, opponent_mark, observe_dp) * 120     # Each way of opponent to way deserve -10 points
+        # value += gameboard.cells.count(mark) * 10    # More marks is more advantageous
+        # value -= gameboard.cells.count(opponent_mark) * 15  # More opponent marks is more disadvantageous
+        for x in gameboard.sub_boards:
+            status = x.check_board_status()
+            if status == mark:
+                value += 10
+            elif status == opponent_mark:
+                value -= 12
+            elif status != 'T':
+                value += self.observe(x, mark, observe_dp)
+                value -= self.observe(x, opponent_mark, observe_dp) * 1.2
+
         if heuristic_dp is not None:
             heuristic_dp[board_id] = value
         # self.heuristic_dp[board_id] = value
