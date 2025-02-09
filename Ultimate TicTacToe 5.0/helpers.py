@@ -4,19 +4,23 @@ import math
 import random
 
 
-ZOBRIST_HASHING_TABLE = [[random.randint(0, math.pow(2, 64)) for j in range(3)] for i in range(81)]
+# ZOBRIST_HASHING_TABLE = [[random.randint(0, math.pow(2, 64)) for j in range(3)] for i in range(81)]
 
 
 class DPStation:
+    ZOBRIST_HASHING_TABLE = [[random.randint(0, 2**64) for j in range(3)] for i in range(81)]
+
     def __init__(self) -> None:
-        self.minimax_dp = [{} for x in range(81)]
+        # self.minimax_dp = [{} for x in range(81)]
         self.status_dp = {}
         self.heuristic_dp = {}
         self.observe_dp = {}
 
-    def board_hashing(board_cells: list[list]) -> int:
+    @classmethod
+    def board_hashing(cls, board_cells: list[str]) -> int:
         """Calculate the hash value of the board"""
-        if isinstance(board_cells[0], str):
+        return ''.join(board_cells)
+        # if isinstance(board_cells[0], str):
             # board_map = [1, 10, 1, 10, 25, 10, 1, 10, 1]
             # cell_value = []
             # for x in board_cells:
@@ -43,18 +47,18 @@ class DPStation:
 
             # hash_key = {'pos': sum(map(lambda x, y: x*y, cell_value, board_map)), 'adj': adjacent_link, 'hol': hollow_link}
             # return frozenset(hash_key.items())
-            value = 0
-            for i in range(9):
-                # for j in range(3):
-                if board_cells[i] == 'X':
-                    tem = 0
-                elif board_cells[i] == 'O':
-                    tem = 1
-                else:
-                    tem = 2
-                # tem = (cells[i][j] == 'X')
-                value ^= ZOBRIST_HASHING_TABLE[i][tem]
-            return value
+        value = 0
+        for i in range(len(board_cells)):
+            # for j in range(3):
+            if board_cells[i] == 'X':
+                tem = 0
+            elif board_cells[i] == 'O':
+                tem = 1
+            else:
+                tem = 2
+            # tem = (board_cells[i] == 'X')
+            value ^= cls.ZOBRIST_HASHING_TABLE[i][tem]
+        return value
         
         # cell_value = []
         # for x in board_cells:
@@ -139,14 +143,14 @@ class DPStation:
             value = 0
             for i in range(9):
                 for j in range(9):
-                    if cells[i][j] == 'X':
-                        tem = 0
-                    elif cells[i][j] == 'O':
-                        tem = 1
-                    else:
-                        tem = 2
-                    # tem = (cells[i][j] == 'X')
-                    value ^= ZOBRIST_HASHING_TABLE[i*9+j][tem]
+                    # if cells[i][j] == 'X':
+                    #     tem = 0
+                    # elif cells[i][j] == 'O':
+                    #     tem = 1
+                    # else:
+                    #     tem = 2
+                    tem = (cells[i][j] == 'X')
+                    value ^= cls.ZOBRIST_HASHING_TABLE[i*9+j][tem]
             return value
 
         # hash_key, tem = [board_cells, flip(board_cells)], board_cells
@@ -162,3 +166,12 @@ class DPStation:
         # return tem[0]
         return hashing(board_cells)
 
+    @classmethod
+    def state_hashing(cls, value: int, x: int, y: int, mark: int) -> int:
+        """Calculate the hash value of the game state"""
+        # if value == -1:
+        #     value = sum(x[2] for x in cls.ZOBRIST_HASHING_TABLE)
+        tem = x * 9 + y
+        # value ^= cls.ZOBRIST_HASHING_TABLE[tem][2]
+        value ^= cls.ZOBRIST_HASHING_TABLE[tem][mark]
+        return value

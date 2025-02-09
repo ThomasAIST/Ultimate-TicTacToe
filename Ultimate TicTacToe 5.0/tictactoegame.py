@@ -93,7 +93,7 @@ class TicTacToeGame:
                             if self.one_player_button.collidepoint(event.pos):
                                 print('single')
                                 # self.players = [Man('Player 1', 'X'),Bot('Player 2', 'O', 10)]
-                                self.players = [Bot('Player 2', 'O', 10),Man('Player 1', 'X')]
+                                self.players = [Bot('Player 2', 'O', 5),Man('Player 1', 'X')]
                             elif self.two_player_button.collidepoint(event.pos):
                                 print('multi')
                                 self.players = [Man('Player 1', 'X'), Man('Player 2', 'O')]
@@ -221,9 +221,9 @@ class TicTacToeGame:
             self.turn = not self.turn
             self.step += 1
             # print('minimax dp', self.dp_station.minimax_dp)
-            print('status', self.dp_station.status_dp)
+            print('status', len(self.dp_station.status_dp),self.dp_station.status_dp)
             # print('heur', self.dp_station.heuristic_dp)
-            print('obser', self.dp_station.observe_dp)
+            print('obser', len(self.dp_station.observe_dp),self.dp_station.observe_dp)
             if isinstance(self.players[self.turn], Bot):
                 import time
                 start = time.time()
