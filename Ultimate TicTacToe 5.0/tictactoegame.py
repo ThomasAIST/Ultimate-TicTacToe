@@ -92,7 +92,8 @@ class TicTacToeGame:
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             if self.one_player_button.collidepoint(event.pos):
                                 print('single')
-                                # self.players = [Man('Player 1', 'X'),Bot('Player 2', 'O', 5)]
+                                # self.players = [Man('Player 1', 'X'), Bot('Player 2', 'O', 5)]
+                                # self.players = [Bot('Player 1', 'X', 5),Bot('Player 2', 'O', 7)]
                                 self.players = [Bot('Player 2', 'O', 5),Man('Player 1', 'X')]
                             elif self.two_player_button.collidepoint(event.pos):
                                 print('multi')
@@ -131,8 +132,9 @@ class TicTacToeGame:
                             if event.type == pygame.MOUSEBUTTONDOWN:
                                 if self.play_again_button.collidepoint(event.pos):
                                     self.page = 'start'
-                                    self.status = 'Preparing'
+                                    self.turn = 0
                                     self.last_pos = (-1, -1)
+                                    self.status = 'Preparing'
 
 
 
@@ -221,9 +223,9 @@ class TicTacToeGame:
             self.turn = not self.turn
             self.step += 1
             # print('minimax dp', self.dp_station.minimax_dp)
-            print('status', len(self.dp_station.status_dp),self.dp_station.status_dp)
+            print('status', len(self.dp_station.status_dp))
             # print('heur', self.dp_station.heuristic_dp)
-            print('analy', len(self.dp_station.analyse_dp),self.dp_station.analyse_dp)
+            print('analy', len(self.dp_station.analyse_dp))
             if isinstance(self.players[self.turn], Bot):
                 import time
                 start = time.time()

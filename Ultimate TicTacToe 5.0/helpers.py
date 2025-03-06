@@ -13,7 +13,7 @@ class DPStation:
     def __init__(self) -> None:
         # self.minimax_dp = [{} for x in range(81)]
         self.status_dp = {}
-        self.heuristic_dp = {}
+        # self.heuristic_dp = {}
         self.analyse_dp = {}
 
     @classmethod
@@ -167,7 +167,7 @@ class DPStation:
         return hashing(board_cells)
 
     @classmethod
-    def state_hashing(cls, value: int, x: int, y: int, mark: int) -> int:
+    def state_hashing(cls, value: int, x: int, y: int, mark: int, state_info: tuple[bool]) -> int:
         """Calculate the hash value of the game state"""
         # if value == -1:
         #     hash_value = 0
@@ -175,8 +175,12 @@ class DPStation:
         #         hash_value ^= i[2]
         # else:
         #     hash_value = value
+        # if state_info[1]:
+        if value != 0:
+            value ^= cls.ZOBRIST_HASHING_TABLE[9][2] if state_info[0] else cls.ZOBRIST_HASHING_TABLE[x][2]
         tem = x * 9 + y
         # value ^= cls.ZOBRIST_HASHING_TABLE[tem][2]
         value ^= cls.ZOBRIST_HASHING_TABLE[tem][mark]
-        value ^= cls.ZOBRIST_HASHING_TABLE[y][2] # indicate next sub board
+        # if state_info[3]:
+        value ^= cls.ZOBRIST_HASHING_TABLE[9][2] if state_info[1] else cls.ZOBRIST_HASHING_TABLE[y][2] # indicate next sub board
         return value

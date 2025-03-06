@@ -41,7 +41,7 @@ class Bot(Player):
         self.thread = None
         self.processing = False
         self.next_move = None
-        # self.heuristic_dp = {}
+        self.heuristic_dp = {}
         # self.observe_dp = {}
         # self.board_map = [1, 10, 1, 10, 25, 10, 1, 10, 1]
 
@@ -86,8 +86,8 @@ class Bot(Player):
             # print([y for x in game.gameboard.sub_boards for y in x.cells])
             # board_id = DPStation.board_hashing([y for x in game.gameboard.sub_boards for y in x.cells])
             
-            # if state_id in dp and depth != 0:
-            #     return dp[state_id]
+            if state_id in dp and depth != 0:
+                return dp[state_id]
             # # assert(board_id is not None)
             # if board_id in game.dp_station.minimax_dp[game.step+depth] and depth != 0:
             #     return game.dp_station.minimax_dp[game.step+depth][board_id]
@@ -112,7 +112,7 @@ class Bot(Player):
             if game.gameboard.check_board_status(game.dp_station.status_dp) != 'C' or depth == self.difficulty:
                 # test1 = time.time()
 
-                tem = self.heuristic(game.gameboard, self.mark, game.dp_station.status_dp, game.dp_station.heuristic_dp, game.dp_station.analyse_dp)
+                tem = self.heuristic(game.gameboard, self.mark, game.dp_station.status_dp, game.dp_station.analyse_dp)
                 # print('timeit', timeit.timeit(lambda: Bot.heuristic(game.gameboard, self.mark), number=10000))
                 # test2 = time.time()
                 # print('heuristics time:', test2-test1)
@@ -156,7 +156,10 @@ class Bot(Player):
                 pos, free_move = game.last_pos, game.free_move
                 game.last_pos = x
                 game.free_move = (game.gameboard.cells[x[1]] != ' ')
-                new_state_id = DPStation.state_hashing(state_id, x[0], x[1], mark_num)
+                state_info = (free_move, game.free_move)
+                new_state_id = DPStation.state_hashing(state_id, x[0], x[1], mark_num, state_info)
+                # print(timeit.timeit(lambda: DPStation.state_hashing(state_id, x[0], x[1], mark_num, state_info), number=1000000))
+                # sys.exit()
                 scores.append(minimax(depth+1, not maximum, alpha, beta, new_state_id))
                 # if scores[-1] > -14:
                 #     print(depth, x, legal_moves)
@@ -185,14 +188,14 @@ class Bot(Player):
                     if best_score > beta:
                         # nonlocal alphaing
                         alphaing[depth]+=1
-                        break
+                        # break
                     alpha = max(alpha, best_score)
                     # alpha = max(alpha, scores[-1])
                 else:
                     if best_score < alpha:
                         # nonlocal alphaing
                         alphaing[depth]+=1
-                        break
+                        # break
                     beta = min(beta, best_score)
                     # beta = min(beta, scores[-1]) 
                 # if alpha > beta:
@@ -257,14 +260,16 @@ class Bot(Player):
         # print('minimax result', minimax(0, True))
         # return next_move
     
-    def heuristic(self, gameboard: GameBoard, mark: str, status_dp: dict = None, heuristic_dp: dict = None, analyse_dp: dict = None) -> int:
+    def heuristic(self, gameboard: GameBoard, mark: str, status_dp: dict = None, analyse_dp: dict = None) -> int:
         """Calculate the heuristic value of a gameboard"""
         # DP for performance
-        if heuristic_dp is not None:
+        # if self.heuristic_dp is not None:
             # board_id = DPStation.board_hashing([gameboard.cells[x*3:(x+1)*3] for x in range(3)])
             # board_id = DPStation.board_hashing(gameboard.cells)
             # board_id = DPStation.board_hashing([[gameboard.sub_boards[x//3+y].cells[y*3+z] for y in range(3) for z in range(3)]for x in range(9)])
-            board_id = DPStation.board_hashing([y for x in gameboard.sub_boards for y in x.cells])
+        board_id = DPStation.board_hashing([y for x in gameboard.sub_boards for y in x.cells])
+            # print(timeit.timeit(lambda:DPStation.board_hashing([y for x in gameboard.sub_boards for y in x.cells]), number=1000000))
+            # sys.exit()
             # cell_value = []
             # for x in gameboard.cells:
             #     if x == 'O':
@@ -274,8 +279,8 @@ class Bot(Player):
             #     else:
             #         cell_value.append(0)
             # board_id = sum(map(lambda x, y: x*y, cell_value, self.board_map))
-            if board_id in heuristic_dp:
-                return heuristic_dp[board_id]
+        if board_id in self.heuristic_dp:
+            return self.heuristic_dp[board_id]
             # for i in range(len(board_id)):
             #     if board_id[i] in heuristic_dp:
             #         return heuristic_dp[board_id[i]]
@@ -285,18 +290,18 @@ class Bot(Player):
         # Return value if the board is ended
         status = gameboard.check_board_status(status_dp)
         if status == mark:
-            if heuristic_dp is not None:
-                heuristic_dp[board_id] = 1000
+            # if self.heuristic_dp is not None:
+            self.heuristic_dp[board_id] = 1000
             # self.heuristic_dp[board_id] = 100
             return 1000
         elif status == opponent_mark:
-            if heuristic_dp is not None:
-                heuristic_dp[board_id] = -1000
+            # if self.heuristic_dp is not None:
+            self.heuristic_dp[board_id] = -1000
             # self.heuristic_dp[board_id] = -100
             return -1000
         elif status == 'T':
-            if heuristic_dp is not None:
-                heuristic_dp[board_id] = 0
+            # if self.heuristic_dp is not None:
+            self.heuristic_dp[board_id] = 0
             # self.heuristic_dp[board_id] = 0
             return 0
         
@@ -326,8 +331,8 @@ class Bot(Player):
         value = round(value, 3)
         assert(-1000<value<1000)
 
-        if heuristic_dp is not None:
-            heuristic_dp[board_id] = value
+        # if self.heuristic_dp is not None:
+        self.heuristic_dp[board_id] = value
         # self.heuristic_dp[board_id] = value
         # if value > -14:
         #     print(value, gameboard.cells)
@@ -335,18 +340,18 @@ class Bot(Player):
         #     for x in tem:
         #         print(x)
             # return None
-        if [x.cells for x in gameboard.sub_boards] == [
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'O'],
-    [' ', ' ', 'O', ' ', ' ', ' ', ' ', ' ', ' '],
-    ['X', 'X', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', 'O', ' ', 'X', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-]:
-            print(value, 'hahahahah')
+#         if [x.cells for x in gameboard.sub_boards] == [
+#     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'O'],
+#     [' ', ' ', 'O', ' ', ' ', ' ', ' ', ' ', ' '],
+#     ['X', 'X', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+#     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+#     [' ', ' ', 'O', ' ', 'X', ' ', ' ', ' ', ' '],
+#     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+#     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+#     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+#     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+# ]:
+#             print(value, 'hahahahah')
         # if value == 24.413:
         #     print('wtf')
         return value
@@ -441,5 +446,6 @@ class Bot(Player):
         adjustment = (num[0] - num[1]) * 0.5 / 3
         probability = {'X': 0.5+adjustment, 'O': 0.5-adjustment}
         assert(0<=probability['X']<=1 and 0<=probability['O']<=1)
-        dp[board_id] = probability
+        if dp is not None:
+            dp[board_id] = probability
         return probability
